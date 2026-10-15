@@ -45,6 +45,33 @@ jobs:
       - name: Run tests
         run: npm test
 
+      # ADDED: Debug actual OIDC claims without printing the token
+      - name: Debug OIDC claims safely
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RESPONSE=$(curl --fail --silent --show-error --get \
+            --data-urlencode "audience=sts.amazonaws.com" \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}")
+
+          export OIDC_RESPONSE="$RESPONSE"
+
+          python3 - <<'PY'
+          import os, json, base64
+
+          response = json.loads(os.environ["OIDC_RESPONSE"])
+          token = response["value"]
+          payload = token.split(".")[1]
+          payload += "=" * (-len(payload) % 4)
+          claims = json.loads(base64.urlsafe_b64decode(payload))
+
+          print("OIDC subject:", claims.get("sub"))
+          print("OIDC audience:", claims.get("aud"))
+          PY
+
       - name: Configure AWS credentials
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: aws-actions/configure-aws-credentials@v6
