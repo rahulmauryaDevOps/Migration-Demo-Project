@@ -76,7 +76,7 @@ jobs:
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/GitHubActionsECRPolicy
+          role-to-assume: arn:aws:iam::528233125980:role/GitHubActionsOIDCTestRole
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Verify AWS identity
@@ -119,7 +119,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/GitHubActionsECRPolicy
+          role-to-assume: arn:aws:iam::528233125980:role/GitHubActionsOIDCTestRole
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy using AWS Systems Manager
